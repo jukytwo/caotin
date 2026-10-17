@@ -368,6 +368,27 @@ footer{margin-top:36px;border-top:2px solid var(--gold);padding-top:16px;font-si
 .to-list li::marker{color:#1F3864;font-weight:700}
 .to-chart img{display:block;width:100%;height:300px;object-fit:contain}
 .tp{font-size:13.2px}.tp-lead{font-size:13.6px}.tp-p{line-height:1.62}
+.dh3{background:var(--surface);border:1px solid var(--line);padding:14px 16px;margin:12px 0}
+.dh3 .dh-k{color:var(--gold-ink);font-weight:700;font-size:13px;letter-spacing:.5px;text-transform:uppercase}
+.dh3 .dh-h{font-weight:700;font-size:19px;color:var(--navy-ink);margin:4px 0 8px;line-height:1.3}
+.dh3 .dh-kl{border-left:4px solid var(--gold);background:var(--note);padding:8px 12px;font-size:15px;line-height:1.5}
+.dh3 .dh-tc{font-size:13px;color:var(--muted);margin:8px 0}.dh3 .dh-tc .chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 10px;color:var(--ink);background:var(--bg)}
+.dh3 .dh-grid{display:grid;grid-template-columns:minmax(200px,260px) 1fr;gap:14px 20px;align-items:start}
+@media (max-width:560px){.dh3 .dh-grid{grid-template-columns:1fr}}
+.dh3 svg{width:100%;height:auto;display:block}
+.dh3 .dh-leg{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;font-size:12.5px;color:var(--muted);margin-top:2px}
+.dh3 .dh-leg span{display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:999px}.dh3 .dh-leg span.on{border:1.5px solid var(--navy-ink);color:var(--ink);font-weight:700}
+.dh3 .dh-leg i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.dh3 .dh-big{display:flex;align-items:baseline;gap:10px}.dh3 .dh-big span{font-size:46px;font-weight:800;color:var(--navy-ink);line-height:1;font-variant-numeric:tabular-nums}
+.dh3 .dh-big small{font-size:17px;font-weight:700;color:var(--navy-ink)}
+.dh3 .dh-sc{font-size:12.5px;color:var(--muted);margin:4px 0 8px}
+.dh3 .dh-pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-weight:600;font-size:14px;margin-bottom:8px;background:var(--bg)}
+.dh3 p{margin:0;font-size:15px;line-height:1.55}
+.dh3 .dh-tp{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px}.dh3 .dh-tp td{padding:6px 4px;border-top:1px solid var(--line)}
+.dh3 .dh-tp td:last-child{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}.dh3 .dh-tp td.pos{color:var(--good)}.dh3 .dh-tp td.neg{color:var(--bad)}
+.dh3 .dh-src{font-size:12.5px;color:var(--muted);margin-top:6px}
+.dh3 .dh-ct summary{font-size:13px;color:var(--navy-ink);cursor:pointer;margin-top:6px}.dh3 .dh-ct p{font-size:13px;color:var(--muted)}
+.tp .dh3 .dh-grid{grid-template-columns:240px 1fr}.tp .dh3 .dh-ct{display:none}.tp .dh3 .dh-big span{font-size:40px}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -684,22 +705,61 @@ function css(v){ return getComputedStyle(root).getPropertyValue(v).trim(); }
 var PALETTE = ['--navy-ink','--gold','#5B7DB8','#B4BCC8','#9DB3DA','#E1E5EB'];
 function col(i){ var p = PALETTE[i % PALETTE.length]; return p.charAt(0) === '-' ? css(p) : p; }
 
+function dhSign(v){ v = Math.round(Number(v)); return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v); }
+var DH3_ZONES = [[-100,-50,'#2E5DA8','Rất sợ'],[-50,-15,'#8EAEE0','Lo ngại'],[-15,15,'#CCD2DC','Bình thường'],[15,50,'#F0CB72','Lạc quan'],[50,100,'#C98318','Hưng phấn']];
+function dhZone(v){ return v <= -50 ? 0 : v <= -15 ? 1 : v < 15 ? 2 : v < 50 ? 3 : 4; }
+function dhBold(t){ var p = el('p'); String(t || '').split(/\*\*(.+?)\*\*/).forEach(function(s, i){ add(p, i % 2 ? el('b', {text:s}) : s); }); return p; }
 function gaugeBlock(g){
-  var v = Math.max(0, Math.min(100, Number(g.diem) || 0));
-  var w = 240, h = 140, cx = 120, cy = 120, r = 96;
-  var svg = svgEl('svg', {viewBox:'0 0 '+w+' '+h, role:'img', 'aria-label':'Đồng hồ tâm lý ' + v + ' trên 100'});
-  var zones = [['#7A8BA8',0,20],['#9DB3DA',20,40],['#C9D2DF',40,60],['#E2C57A',60,80],[css('--gold'),80,100]];
-  zones.forEach(function(z){
-    var a0 = Math.PI * (1 - z[1]/100), a1 = Math.PI * (1 - z[2]/100);
-    var x0 = cx + r*Math.cos(a0), y0 = cy - r*Math.sin(a0), x1 = cx + r*Math.cos(a1), y1 = cy - r*Math.sin(a1);
-    svg.appendChild(svgEl('path', {d:'M'+x0+' '+y0+' A'+r+' '+r+' 0 0 1 '+x1+' '+y1, stroke:z[0], 'stroke-width':'18', fill:'none'}));
+  if (!(Number(g.phien_ban) >= 3 || g.thang === '-100..100')) return gaugeOld(g);
+  var v = Math.max(-100, Math.min(100, Math.round(Number(g.diem) || 0))), z = dhZone(v);
+  var ss = g.so_sanh || {}, truoc = (ss.diem_truoc != null && !ss.chi_giong) ? Number(ss.diem_truoc) : null;
+  var w = 260, h = 150, cx = 130, cy = 128, r = 100;
+  var svg = svgEl('svg', {viewBox:'0 0 '+w+' '+h, role:'img', 'aria-label':'Đồng hồ tâm lý ' + dhSign(v) + ', vùng ' + DH3_ZONES[z][3]});
+  function pt(val, rr){ var a = Math.PI * (1 - (val + 100) / 200); return [cx + rr * Math.cos(a), cy - rr * Math.sin(a)]; }
+  DH3_ZONES.forEach(function(q){
+    var p0 = pt(q[0] + (q[0] > -100 ? 1.6 : 0), r), p1 = pt(q[1] - (q[1] < 100 ? 1.6 : 0), r);
+    svg.appendChild(svgEl('path', {d:'M'+p0[0]+' '+p0[1]+' A'+r+' '+r+' 0 0 1 '+p1[0]+' '+p1[1], stroke:q[2], 'stroke-width':'24', fill:'none'}));
   });
-  var a = Math.PI * (1 - v/100);
-  svg.appendChild(svgEl('line', {x1:cx, y1:cy, x2:cx + (r-14)*Math.cos(a), y2:cy - (r-14)*Math.sin(a), stroke:css('--navy-ink'), 'stroke-width':'4', 'stroke-linecap':'round'}));
-  svg.appendChild(svgEl('circle', {cx:cx, cy:cy, r:'7', fill:css('--navy-ink')}));
-  var l0 = svgEl('text', {x:'14', y:'138', 'font-size':'11', fill:css('--muted')}); l0.textContent = 'Lo sợ'; svg.appendChild(l0);
-  var l1 = svgEl('text', {x:'226', y:'138', 'font-size':'11', 'text-anchor':'end', fill:css('--muted')}); l1.textContent = 'Hưng phấn'; svg.appendChild(l1);
-  return el('div', {class:'gauge'}, svg, el('div', null, el('div', {class:'big', text: Math.round(v) + '/100'}), el('div', {class:'lbl', text: S(g.nhan || 'Đồng hồ tâm lý')}), g.mo_ta ? el('p', {text:S(g.mo_ta)}) : null));
+  if (truoc != null) { var gp = pt(truoc, r - 36); svg.appendChild(svgEl('line', {x1:cx, y1:cy, x2:gp[0], y2:gp[1], stroke:'#8A94A6', 'stroke-width':'3', 'stroke-dasharray':'5 4', 'stroke-linecap':'round'})); }
+  var kp = pt(v, r - 30);
+  svg.appendChild(svgEl('line', {x1:cx, y1:cy, x2:kp[0], y2:kp[1], stroke:css('--navy-ink') || '#16213A', 'stroke-width':'5', 'stroke-linecap':'round'}));
+  svg.appendChild(svgEl('circle', {cx:cx, cy:cy, r:'8', fill:css('--navy-ink') || '#16213A'}));
+  var leg = el('div', {class:'dh-leg'}, DH3_ZONES.map(function(q, i){ return el('span', {class: i === z ? 'on' : ''}, el('i', {style:'background:' + q[2]}), q[3]); }));
+  var tc = g.tin_cay || {}, tp = g.thanh_phan || {};
+  var head = S(g.ket_luan_nhanh) || ('Tâm lý thị trường: ' + S(g.nhan || DH3_ZONES[z][3]));
+  var pill = null;
+  if (ss.chenh != null && ss.diem_truoc != null) {
+    var up = ss.chenh > 0, same = Math.abs(ss.chenh) < 5, sau = ss.chi_giong && ss.diem_sau != null ? ss.diem_sau : v;
+    pill = el('div', {class:'dh-pill'}, (same ? '● ' : up ? '▲ ' : '▼ ') + (ss.chi_giong ? 'Giọng tin và F247 ' : 'Tâm lý ') + (same ? 'gần như không đổi' : up ? 'tốt hơn' : 'xấu hơn') + ' so với ' + S(ss.moc) + ' (' + dhSign(ss.diem_truoc) + ' → ' + dhSign(sau) + ')');
+  }
+  var rows = [['giong', 'Tin tức và diễn đàn nói gì'], ['chinh_sach', 'Chính sách đang hướng tới đâu']].filter(function(k){ return tp[k[0]] && tp[k[0]].diem != null; }).map(function(k){
+    var x = tp[k[0]];
+    return el('tr', null, el('td', {text: S(x.ten || k[1]) + (x.trong_so ? ' · ' + Math.round(x.trong_so * 100) + '%' : '')}),
+      el('td', {class: x.diem > 0 ? 'pos' : x.diem < 0 ? 'neg' : '', text: dhSign(x.diem)}));
+  });
+  var nc = g.nguoc_chieu || {};
+  return el('div', {class:'dh3'},
+    el('div', {class:'dh-k', text:'Đồng hồ tâm lý tổng hợp'}),
+    el('div', {class:'dh-h', text: head}),
+    el('div', {class:'dh-kl'}, el('b', {text:'Kết luận: '}), S(g.ket_luan || '')),
+    tc.muc ? el('div', {class:'dh-tc'}, el('span', {class:'chip'}, 'Độ tin cậy: ', el('b', {text:S(tc.muc)})), arr(tc.ly_do).length ? ' · ' + arr(tc.ly_do).join('; ') : '') : null,
+    el('div', {class:'dh-grid'},
+      el('div', null, svg, leg),
+      el('div', null,
+        el('div', {class:'dh-big'}, el('span', {text: dhSign(v)}), el('small', {text:'vùng ' + DH3_ZONES[z][3]})),
+        el('div', {class:'dh-sc', text:'thang −100 (rất sợ) đến +100 (hưng phấn)'}),
+        pill,
+        g.nhan_dinh ? dhBold(g.nhan_dinh) : null)),
+    rows.length ? el('table', {class:'dh-tp'}, el('tbody', null, rows)) : null,
+    nc.diem != null ? el('div', {class:'dh-src', text:'Góc nhìn ngược chiều (La bàn): tâm lý đám đông ' + dhSign(nc.diem) + ', vùng ' + S(nc.vung) + (nc.lich_su && nc.lich_su.tb != null ? '; lịch sử ở vùng này VN-Index 26 tuần sau bình quân ' + String(nc.lich_su.tb).replace('.', ',') + '%, ' + nc.lich_su.duong + '% số lần tăng' : '') + '.'}) : null,
+    g.nguon_dong_ho ? el('div', {class:'dh-src', text:'Nguồn: ' + S(g.nguon_dong_ho)}) : null,
+    g.cach_tinh ? el('details', {class:'dh-ct'}, el('summary', {text:'Cách tính'}), el('p', {text:S(g.cach_tinh)})) : null);
+}
+function gaugeOld(g){
+  var v = Math.max(0, Math.min(100, Number(g.diem) || 0));
+  return el('div', {class:'dh3'}, el('div', {class:'dh-k', text:'Đồng hồ tâm lý (thang cũ 0–100)'}),
+    el('div', {class:'dh-h', text: Math.round(v) + '/100 · ' + S(g.nhan || '')}), g.mo_ta ? el('p', {class:'dh-src', text:S(g.mo_ta)}) : null,
+    el('div', {class:'dh-src', text:'Báo cáo chạy trước khi dùng chung đồng hồ với TVN Insight; không so trực tiếp với thang −100 đến +100.'}));
 }
 
 function stackChart(b){
@@ -833,7 +893,7 @@ function viewCompare(startId){
     var A = findDoc(aSel.value), B = findDoc(bSel.value); if (!A || !B) return;
     function colFor(d, tag){
       var c = el('div', {class:'col'}, el('h3', {text: tag}), el('div', {class:'d', text: fmtDate(d.ngay)}));
-      if (d.dong_ho && d.dong_ho.diem != null) add(c, el('div', {class:'qq'}, el('b', {text:'Đồng hồ tâm lý'}), String(d.dong_ho.diem) + ' · ' + S(d.dong_ho.nhan)));
+      if (d.dong_ho && d.dong_ho.diem != null) add(c, el('div', {class:'qq'}, el('b', {text:'Đồng hồ tâm lý'}), (Number(d.dong_ho.phien_ban) >= 3 ? dhSign(d.dong_ho.diem) : String(d.dong_ho.diem) + '/100') + ' · ' + S(d.dong_ho.nhan)));
       add(c, el('div', {class:'qq'}, el('b', {text:'Kết luận'}), S(d.ket_luan)));
       arr(d.bay_cau).forEach(function(q, i){ add(c, el('div', {class:'qq'}, el('b', {text: (i+1) + '. ' + S(q.cau || Q7[i])}), S(q.tra_loi), ' ', q.danh_gia ? el('span', {class:'verdict '+q.danh_gia, text:'(' + (DG[q.danh_gia]||'') + ')'}) : null)); });
       return c;
@@ -1206,11 +1266,13 @@ function tpFlow(d){
   var firstHasStats = muc.length && arr(muc[0].khoi).some(function(b){ return b && b.loai === 'the_so'; });
   var statsDone = false;
   if (arr(d.the_so).length && (!muc.length || firstHasStats)) { B.push(tpStats(d.the_so)); statsDone = true; }
-  if (d.dong_ho && d.dong_ho.diem != null) B.push(gaugeBlock(d.dong_ho));
+  var gaugeDone = !(d.dong_ho && d.dong_ho.diem != null);
+  if (!gaugeDone && !muc.length) { B.push(gaugeBlock(d.dong_ho)); gaugeDone = true; }
   muc.forEach(function(m, mi){
     B.push(tpBand(m.tieu_de));
     if (mi === 0 && !statsDone && arr(d.the_so).length) { B.push(tpStats(d.the_so)); statsDone = true; }
     arr(m.khoi).forEach(function(b){ tpBlock(b, 'pdf').forEach(function(x){ B.push(x); }); });
+    if (mi === 0 && !gaugeDone) { B.push(gaugeBlock(d.dong_ho)); gaugeDone = true; }
   });
   if (arr(d.theo_doi).length) { B.push(band('Mốc cần theo dõi')); B.push(tpTable(['Mốc cần theo dõi', 'Thời điểm', 'Điều cần xem'], arr(d.theo_doi).map(function(t){ return [t.moc, t.thoi_diem, t.can_xem]; }))); }
   if (arr(d.gioi_han).length) { B.push(band('Giới hạn của báo cáo')); B.push(el('ul', {class:'tp-ul'}, arr(d.gioi_han).map(function(x){ return el('li', {text:S(x)}); }))); }
@@ -1288,7 +1350,8 @@ function pickTable(d){
   var best = null;
   arr(d.muc).forEach(function(m){ arr(m.khoi).forEach(function(b){ if (b && b.loai === 'bang' && arr(b.hang).length && (!best || (/^Mã/.test(S(arr(b.cot)[0])) && !/^Mã/.test(S(arr(best.cot)[0]))))) best = b; }); });
   if (!best) return null;
-  var cot = arr(best.cot), want = [/^Mã|^Ngành|^Điểm|^Thông điệp/, /Giá|Chủ đề|Mục tiêu/, /Thanh khoản|Dòng tiền|Hành động/, /Đánh giá|Khớp|Người đọc/];
+  var cot = arr(best.cot), hasGia = cot.some(function(c){ return /^Giá/.test(S(c)); });
+  var want = [/^Mã|^Ngành|^Điểm|^Thông điệp/, hasGia ? /^Giá/ : /Chủ đề|Mục tiêu/, /Thanh khoản|Dòng tiền|Hành động/, /Đánh giá|Khớp|Người đọc/];
   var idx = []; want.forEach(function(r){ for (var i = 0; i < cot.length; i++) if (r.test(S(cot[i])) && idx.indexOf(i) < 0) { idx.push(i); break; } });
   if (idx.length < 3) idx = [0, 1, 2, 3].filter(function(i){ return i < cot.length; });
   return {src: best, cot: idx.map(function(i){ return cot[i]; }), hang: arr(best.hang).slice(0, 8).map(function(r){ return idx.map(function(i){ return cut(arr(r)[i], 46); }); })};
@@ -1326,7 +1389,13 @@ function buildOnePager(d){
   var L = tg.cot_trai || colFrom(d, used, 'danh_sach') || colFrom(d, used, 'bang'), R = tg.cot_phai || colFrom(d, used, 'bang') || colFrom(d, used, 'danh_sach');
   if (!R && arr(d.ham_y).length) R = {tieu_de:'Hàm ý cần kiểm chứng', danh_so:true, items: arr(d.ham_y).slice(0, 4).map(function(x, i){ return {text: arr(tg.ham_y)[i] || x.ham_y}; })};
   if (!L && arr(d.bay_cau).length) L = {tieu_de:'Bảy câu hỏi cốt lõi', danh_so:true, items: arr(d.bay_cau).map(function(q, i){ return {dam:S(q.cau || Q7[i]), text: arr(tg.bay_cau)[i] || q.tra_loi}; })};
-  if (L || R) add(body, el('div', {class:'to-cols'}, colEl(L) || el('div'), colEl(R) || el('div')));
+  var rc = colEl(R) || el('div');
+  if (d.dong_ho && d.dong_ho.diem != null) {
+    var g3 = Number(d.dong_ho.phien_ban) >= 3, ssg = d.dong_ho.so_sanh || {};
+    add(rc, el('div', {class:'to-gauge'}, el('b', {text:'Đồng hồ tâm lý ' + (g3 ? dhSign(d.dong_ho.diem) : Math.round(d.dong_ho.diem) + '/100')}),
+      ' · ' + S(d.dong_ho.nhan) + (g3 ? ' (thang −100 đến +100)' : '') + (g3 && ssg.diem_truoc != null ? '; ' + S(ssg.moc) + ': ' + dhSign(ssg.diem_truoc) : '')));
+  }
+  if (L || R || d.dong_ho) add(body, el('div', {class:'to-cols'}, colEl(L) || el('div'), rc));
   var cards = tg.the, bgy = null;
   if (!cards) arr(d.muc).some(function(m){ return arr(m.khoi).some(function(b){ if (b && b.loai === 'the_goi_y') { bgy = {tieu_de: tpStrip(m.tieu_de), items: b.items}; return true; } }); });
   cards = cards || bgy || (arr(d.kich_ban).length ? {tieu_de:'Kịch bản', items: arr(d.kich_ban).map(function(k){ return {tieu_de: S(k.ten) + (k.xac_suat ? ' · ' + k.xac_suat : ''), text: S(k.tac_dong)}; })} : null);
